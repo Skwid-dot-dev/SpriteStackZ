@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpriteStackView</title>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .parameters {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #3367d6;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .preview {
+            margin-top: 10px;
+            max-width: 100%;
+            display: none;
+        }
+
+        .preview img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            image-rendering: pixelated;
+        }
+
+        .canvas-container {
+            width: 100%;
+            overflow: auto;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        canvas {
+            margin: 10px;
+            image-rendering: pixelated;
+        }
+
+        .error {
+            color: #d32f2f;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .controls {
+            margin-top: 15px;
+        }
+        
+        .slider-container {
+            margin-top: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+        }
+        
+        .warning {
+            color: #f57c00;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .rotation-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .preset-button {
+            flex: 1;
+            padding: 8px;
+            background-color: #eee;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            min-width: 60px;
+        }
+        
+        .preset-button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .debug-info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            background-color: #f5f5f5;
+            padding: 5px;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SpriteStackView</h1>
+        
+        <div class="input-group">
+            <label for="spriteFile">Upload Sprite Strip (PNG, JPG, GIF)</label>
+            <input type="file" id="spriteFile" accept=".png, .jpg, .jpeg, .gif">
+        </div>
+        
+        <div class="preview" id="imagePreview">
+            <p>Preview:</p>
+            <img id="previewImage" alt="Sprite Preview">
+        </div>
+        
+        <div class="parameters">
+            <div class="input-group">
+                <label for="frameWidth">Frame Width (px) <small>max 256</small></label>
+                <input type="number" id="frameWidth" min="1" max="256" value="32">
+            </div>
+            
+            <div class="input-group">
+                <label for="frameHeight">Frame Height (px) <small>max 256</small></label>
+                <input type="number" id="frameHeight" min="1" max="256" value="32">
+            </div>
+            
+            <div class="input-group">
+                <label for="horizontalOffset">Horizontal Offset per Frame (px)</label>
+                <input type="number" id="horizontalOffset" value="0">
+            </div>
+            
+            <div class="input-group">
+                <label for="verticalOffset">Vertical Offset per Frame (px)</label>
+                <input type="number" id="verticalOffset" value="1">
+            </div>
+            
+            <div class="input-group">
+                <label for="stackOrder">Stacking Order</label>
+                <select id="stackOrder">
+                    <option value="backToFront">Back to Front (Default)</option>
+                    <option value="frontToBack">Front to Back</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="zoomLevel">Zoom Level</label>
+                <input type="number" id="zoomLevel" min="1" max="10" value="1" step="0.5">
+            </div>
+        </div>
+        
+        <!-- Render Button - No longer disabled by default -->
+        <button id="renderButton">Render Stack</button>
+        
+        <div class="controls" id="rotationControls" style="display: none;">
+            <div class="rotation-controls">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>X Rotation (degrees): </span>
+                        <span id="xRotationValue">0°</span>
+                    </div>
+                    <input type="range" id="xRotationSlider" min="0" max="359" value="0">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Y Rotation (degrees): </span>
+                        <span id="yRotationValue">0°</span>
+                    </div>
+                    <input type="range" id="yRotationSlider" min="0" max="359" value="0">
+                </div>
+            </div>
+            
+            <div class="preset-buttons">
+                <div class="preset-button" data-x="0" data-y="0">Front</div>
+                <div class="preset-button" data-x="0" data-y="90">Right</div>
+                <div class="preset-button" data-x="0" data-y="180">Back</div>
+                <div class="preset-button" data-x="0" data-y="270">Left</div>
+                <div class="preset-button" data-x="90" data-y="0">Top</div>
+                <div class="preset-button" data-x="270" data-y="0">Bottom</div>
+                <div class="preset-button" data-x="45" data-y="45">Corner</div>
+            </div>
+        </div>
+        
+        <div id="errorMessage" class="error"></div>
+        <div id="warningMessage" class="warning"></div>
+        <div id="infoMessage" class="info"></div>
+        <div id="debugInfo" class="debug-info"></div>
+    </div>
+    
+    <div class="canvas-container">
+        <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const fileInput = document.getElementById('spriteFile');
+            const previewContainer = document.getElementById('imagePreview');
+            const previewImage = document.getElementById('previewImage');
+            const frameWidthInput = document.getElementById('frameWidth');
+            const frameHeightInput = document.getElementById('frameHeight');
+            const horizontalOffsetInput = document.getElementById('horizontalOffset');
+            const verticalOffsetInput = document.getElementById('verticalOffset');
+            const stackOrderSelect = document.getElementById('stackOrder');
+            const zoomLevelInput = document.getElementById('zoomLevel');
+            const renderButton = document.getElementById('renderButton');
+            const canvas = document.getElementById('outputCanvas');
+            const ctx = canvas.getContext('2d');
+            const errorMessage = document.getElementById('errorMessage');
+            const warningMessage = document.getElementById('warningMessage');
+            const infoMessage = document.getElementById('infoMessage');
+            const debugInfo = document.getElementById('debugInfo');
+            const rotationControls = document.getElementById('rotationControls');
+            const xRotationSlider = document.getElementById('xRotationSlider');
+            const yRotationSlider = document.getElementById('yRotationSlider');
+            const xRotationValue = document.getElementById('xRotationValue');
+            const yRotationValue = document.getElementById('yRotationValue');
+            const presetButtons = document.querySelectorAll('.preset-button');
+            
+            let spriteImage = null;
+            let frames = [];
+            let currentXRotation = 0;
+            let currentYRotation = 0;
+            
+            // Disable image smoothing for sharp pixel art
+            ctx.imageSmoothingEnabled = false;
+            
+            // File input change handler
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                
+                if (!file) {
+                    infoMessage.textContent = 'No file selected';
+                    return;
+                }
+                
+                infoMessage.textContent = 'Loading file...';
+                
+                // Check file type
+                const validTypes = ['image/png', 'image/jpeg', 'image/gif'];
+                if (!validTypes.includes(file.type)) {
+                    displayError('Please upload a valid image file (PNG, JPG, or GIF)');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                // Read and display the file
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    spriteImage = new Image();
+                    spriteImage.onload = function() {
+                        previewImage.src = event.target.result;
+                        previewContainer.style.display = 'block';
+                        errorMessage.textContent = '';
+                        warningMessage.textContent = '';
+                        
+                        // Set default frame dimensions based on image
+                        const estimatedFrames = Math.round(spriteImage.width / spriteImage.height);
+                        const estimatedFrameWidth = Math.floor(spriteImage.width / estimatedFrames);
+                        
+                        // Enforce size limits
+                        frameWidthInput.value = Math.min(estimatedFrameWidth, 256);
+                        frameHeightInput.value = Math.min(spriteImage.height, 256);
+                        
+                        // Display warning if original dimensions exceed limits
+                        if (spriteImage.height > 256 || estimatedFrameWidth > 256) {
+                            warningMessage.textContent = 'Image dimensions exceed the maximum 256×256px per frame limit. Frames will be capped at 256px.';
+                        }
+                        
+                        infoMessage.textContent = `Image loaded: ${spriteImage.width}×${spriteImage.height}px`;
+                        debugInfo.textContent = `Image object: ${spriteImage.width}×${spriteImage.height}, Complete: ${spriteImage.complete}`;
+                    };
+                    spriteImage.onerror = function() {
+                        displayError('Failed to load the image. Please try another file.');
+                    };
+                    spriteImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Validate frame size inputs
+            frameWidthInput.addEventListener('input', function() {
+                if (parseInt(this.value) > 256) {
+                    this.value = 256;
+                    warningMessage.textContent = 'Frame width limited to maximum of 256px';
+                } else {
+                    warningMessage.textContent = '';
+                }
+            });
+            
+            frameHeightInput.addEventListener('input', function() {
+                if (parseInt(this.value) > 256) {
+                    this.value = 256;
+                    warningMessage.textContent = 'Frame height limited to maximum of 256px';
+                } else {
+                    warningMessage.textContent = '';
+                }
+            });
+            
+            // Render button click handler
+            renderButton.addEventListener('click', function() {
+                if (!spriteImage) {
+                    displayError('Please upload a sprite image first');
+                    return;
+                }
+                
+                // Check if the image is loaded fully
+                if (!spriteImage.complete) {
+                    displayError('Image is still loading. Please wait...');
+                    return;
+                }
+                
+                renderStack();
+                rotationControls.style.display = 'block';
+                infoMessage.textContent = 'Stack rendered. Use the controls to view different angles.';
+            });
+            
+            // Rotation sliders handlers
+            xRotationSlider.addEventListener('input', function() {
+                currentXRotation = parseInt(this.value);
+                xRotationValue.textContent = currentXRotation + '°';
+                renderRotatedStack();
+            });
+            
+            yRotationSlider.addEventListener('input', function() {
+                currentYRotation = parseInt(this.value);
+                yRotationValue.textContent = currentYRotation + '°';
+                renderRotatedStack();
+            });
+            
+            // Preset buttons handler
+            presetButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const xRotation = parseInt(this.getAttribute('data-x'));
+                    const yRotation = parseInt(this.getAttribute('data-y'));
+                    
+                    xRotationSlider.value = xRotation;
+                    yRotationSlider.value = yRotation;
+                    currentXRotation = xRotation;
+                    currentYRotation = yRotation;
+                    xRotationValue.textContent = xRotation + '°';
+                    yRotationValue.textContent = yRotation + '°';
+                    
+                    renderRotatedStack();
+                });
+            });
+            
+            // Zoom level handler
+            zoomLevelInput.addEventListener('input', function() {
+                renderRotatedStack();
+            });
+            
+            // Stack order handler
+            stackOrderSelect.addEventListener('change', function() {
+                renderRotatedStack();
+            });
+            
+            function renderStack() {
+                try {
+                    // Get input values
+                    const frameWidth = Math.min(parseInt(frameWidthInput.value) || 32, 256);
+                    const frameHeight = Math.min(parseInt(frameHeightInput.value) || 32, 256);
+                    const horizontalOffset = parseInt(horizontalOffsetInput.value) || 0;
+                    const verticalOffset = parseInt(verticalOffsetInput.value) || 1;
+                    
+                    // Validate inputs
+                    if (isNaN(frameWidth) || frameWidth <= 0) {
+                        displayError('Frame width must be a positive number');
+                        return;
+                    }
+                    
+                    if (isNaN(frameHeight) || frameHeight <= 0) {
+                        displayError('Frame height must be a positive number');
+                        return;
+                    }
+                    
+                    // Calculate number of frames
+                    const numFrames = Math.floor(spriteImage.width / frameWidth);
+                    
+                    if (numFrames <= 0) {
+                        displayError('Frame width is larger than the image width');
+                        return;
+                    }
+                    
+                    // Extract frame data
+                    frames = [];
+                    for (let i = 0; i < numFrames; i++) {
+                        const frameCanvas = document.createElement('canvas');
+                        frameCanvas.width = frameWidth;
+                        frameCanvas.height = frameHeight;
+                        const frameCtx = frameCanvas.getContext('2d');
+                        
+                        // Disable image smoothing for each frame canvas
+                        frameCtx.imageSmoothingEnabled = false;
+                        
+                        const sourceX = i * frameWidth;
+                        const sourceY = 0;
+                        
+                        // Debugging
+                        debugInfo.style.display = 'block';
+                        debugInfo.textContent += `\nFrame ${i}: Source(${sourceX},${sourceY},${frameWidth},${frameHeight})`;
+                        
+                        frameCtx.drawImage(
+                            spriteImage,
+                            sourceX, sourceY, frameWidth, frameHeight,
+                            0, 0, frameWidth, frameHeight
+                        );
+                        
+                        frames.push(frameCanvas);
+                    }
+                    
+                    // Calculate canvas dimensions to fit the stacked frames
+                    const canvasWidth = frameWidth + Math.abs(horizontalOffset) * (numFrames - 1);
+                    const canvasHeight = frameHeight + Math.abs(verticalOffset) * (numFrames - 1);
+                    
+                    // Set initial canvas size
+                    canvas.width = canvasWidth;
+                    canvas.height = canvasHeight;
+                    
+                    renderRotatedStack();
+                    
+                    infoMessage.textContent = `Rendered ${numFrames} frames with ${horizontalOffset}px horizontal and ${verticalOffset}px vertical offset per frame`;
+                } catch (err) {
+                    displayError('Error rendering stack: ' + err.message);
+                    debugInfo.style.display = 'block';
+                    debugInfo.textContent += '\nError: ' + err.stack;
+                }
+            }
+            
+            function renderRotatedStack() {
+                if (frames.length === 0) return;
+                
+                try {
+                    // Get input values
+                    const frameWidth = Math.min(parseInt(frameWidthInput.value) || 32, 256);
+                    const frameHeight = Math.min(parseInt(frameHeightInput.value) || 32, 256);
+                    const horizontalOffset = parseInt(horizontalOffsetInput.value) || 0;
+                    const verticalOffset = parseInt(verticalOffsetInput.value) || 1;
+                    const stackOrder = stackOrderSelect.value;
+                    const zoomLevel = parseFloat(zoomLevelInput.value) || 1;
+                    
+                    // Calculate canvas dimensions to fit the stacked frames
+                    const numFrames = frames.length;
+                    const canvasWidth = (frameWidth + Math.abs(horizontalOffset) * (numFrames - 1)) * zoomLevel;
+                    const canvasHeight = (frameHeight + Math.abs(verticalOffset) * (numFrames - 1)) * zoomLevel;
+                    
+                    // Add some padding for rotation
+                    const padding = Math.max(frameWidth, frameHeight) * 2 * zoomLevel;
+                    canvas.width = canvasWidth + padding * 2;
+                    canvas.height = canvasHeight + padding * 2;
+                    
+                    // Clear canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Ensure image smoothing is disabled after canvas resize
+                    ctx.imageSmoothingEnabled = false;
+                    
+                    // Calculate center point for rotation
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    
+                    // Calculate starting position
+                    let startX = centerX - (frameWidth * zoomLevel) / 2;
+                    let startY = centerY - (frameHeight * zoomLevel) / 2;
+                    
+                    // Adjust for negative offsets
+                    if (horizontalOffset < 0) {
+                        startX += Math.abs(horizontalOffset) * (numFrames - 1) * zoomLevel;
+                    }
+                    
+                    if (verticalOffset < 0) {
+                        startY += Math.abs(verticalOffset) * (numFrames - 1) * zoomLevel;
+                    }
+                    
+                    // Save the current context state
+                    ctx.save();
+                    
+                    // Apply 3D-like rotations
+                    ctx.translate(centerX, centerY);
+                    
+                    // Apply X rotation first
+                    ctx.rotate(currentXRotation * Math.PI / 180);
+                    
+                    // Apply Y rotation with scaling effect for pseudo-3D
+                    const yRadians = currentYRotation * Math.PI / 180;
+                    ctx.scale(Math.cos(yRadians), 1);
+                    ctx.rotate(yRadians * 0.5); // Apply some skew based on Y rotation
+                    
+                    ctx.translate(-centerX, -centerY);
+                    
+                    // Determine stacking order
+                    let frameIndices;
+                    if (stackOrder === 'backToFront') {
+                        frameIndices = Array.from({ length: numFrames }, (_, i) => i);
+                    } else { // frontToBack
+                        frameIndices = Array.from({ length: numFrames }, (_, i) => numFrames - 1 - i);
+                    }
+                    
+                    // Draw frames in the selected order
+                    for (let idx of frameIndices) {
+                        const dx = startX + idx * horizontalOffset * zoomLevel;
+                        const dy = startY + idx * verticalOffset * zoomLevel;
+                        
+                        ctx.drawImage(
+                            frames[idx], 
+                            dx, 
+                            dy, 
+                            frameWidth * zoomLevel, 
+                            frameHeight * zoomLevel
+                        );
+                    }
+                    
+                    // Restore the context state
+                    ctx.restore();
+                } catch (err) {
+                    displayError('Error rendering rotated stack: ' + err.message);
+                    debugInfo.style.display = 'block';
+                    debugInfo.textContent += '\nRotation error: ' + err.stack;
+                }
+            }
+            
+            // Helper function to display errors
+            function displayError(message) {
+                errorMessage.textContent = message;
+                warningMessage.textContent = '';
+            }
+            
+            // Initialize with a small default canvas
+            canvas.width = 300;
+            canvas.height = 300;
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#aaa';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Upload an image and click "Render Stack"', canvas.width/2, canvas.height/2);
+        });
+    </script>
+</body>
+</html>
