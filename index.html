@@ -521,72 +521,77 @@
                 infoMessage.textContent = `Rendered ${numFrames} frames with ${horizontalOffset}px horizontal and ${verticalOffset}px vertical offset per frame`;
             }
             
-            function renderRotatedStack() {
-                if (frames.length === 0) return;
-                
-                // Get input values
-                const frameWidth = Math.min(parseInt(frameWidthInput.value), 256);
-                const frameHeight = Math.min(parseInt(frameHeightInput.value), 256);
-                const horizontalOffset = parseInt(horizontalOffsetInput.value);
-                const verticalOffset = parseInt(verticalOffsetInput.value);
-                
-                // Calculate canvas dimensions to fit the stacked frames
-                const numFrames = frames.length;
-                const canvasWidth = frameWidth + Math.abs(horizontalOffset) * (numFrames - 1);
-                const canvasHeight = frameHeight + Math.abs(verticalOffset) * (numFrames - 1);
-                
-                // Add some padding for rotation
-                const padding = Math.max(frameWidth, frameHeight) * 1.5;
-                canvas.width = canvasWidth + padding * 2;
-                canvas.height = canvasHeight + padding * 2;
-                
-                // Clear canvas with transparency
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Ensure image smoothing is disabled after canvas resize
-                ctx.imageSmoothingEnabled = false;
-                
-                // Calculate center point for rotation
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                
-                // Calculate starting position
-                let startX = centerX - frameWidth / 2;
-                let startY = centerY - frameHeight / 2;
-                
-                // Adjust for negative offsets
-                if (horizontalOffset < 0) {
-                    startX += Math.abs(horizontalOffset) * (numFrames - 1);
-                }
-                
-                if (verticalOffset < 0) {
-                    startY += Math.abs(verticalOffset) * (numFrames - 1);
-                }
-                
-                // Save the current context state
-                ctx.save();
-                
-                // Translate to the center point, rotate, then translate back
-                ctx.translate(centerX, centerY);
-                ctx.rotate(currentRotation * Math.PI / 180);
-                ctx.translate(-centerX, -centerY);
-                
-                // Determine drawing order based on toggle
-                const startIndex = isFrontToBack ? numFrames - 1 : 0;
-                const endIndex = isFrontToBack ? -1 : numFrames;
-                const step = isFrontToBack ? -1 : 1;
-                
-                // Draw frames in the specified order
-                for (let i = startIndex; i !== endIndex; i += step) {
-                    const dx = startX + i * horizontalOffset;
-                    const dy = startY + i * verticalOffset;
-                    
-                    ctx.drawImage(frames[i], dx, dy);
-                }
-                
-                // Restore the context state
-                ctx.restore();
-            }
+ function renderRotatedStack() {
+    if (frames.length === 0) return;
+    
+    // Get input values
+    const frameWidth = Math.min(parseInt(frameWidthInput.value), 256);
+    const frameHeight = Math.min(parseInt(frameHeightInput.value), 256);
+    const horizontalOffset = parseInt(horizontalOffsetInput.value);
+    const verticalOffset = parseInt(verticalOffsetInput.value);
+    
+    // Calculate canvas dimensions to fit the stacked frames
+    const numFrames = frames.length;
+    const canvasWidth = frameWidth + Math.abs(horizontalOffset) * (numFrames - 1);
+    const canvasHeight = frameHeight + Math.abs(verticalOffset) * (numFrames - 1);
+    
+    // Add some padding for rotation
+    const padding = Math.max(frameWidth, frameHeight) * 1.5;
+    canvas.width = canvasWidth + padding * 2;
+    canvas.height = canvasHeight + padding * 2;
+    
+    // Clear canvas with transparency
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Ensure image smoothing is disabled after canvas resize
+    ctx.imageSmoothingEnabled = false;
+    
+    // Calculate center point for stacking
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Calculate starting position
+    let startX = centerX - frameWidth / 2;
+    let startY = centerY - frameHeight / 2;
+    
+    // Adjust for negative offsets
+    if (horizontalOffset < 0) {
+        startX += Math.abs(horizontalOffset) * (numFrames - 1);
+    }
+    
+    if (verticalOffset < 0) {
+        startY += Math.abs(verticalOffset) * (numFrames - 1);
+    }
+    
+    // Determine drawing order based on toggle
+    const startIndex = isFrontToBack ? numFrames - 1 : 0;
+    const endIndex = isFrontToBack ? -1 : numFrames;
+    const step = isFrontToBack ? -1 : 1;
+    
+    // Draw frames in the specified order
+    for (let i = startIndex; i !== endIndex; i += step) {
+        const dx = startX + i * horizontalOffset;
+        const dy = startY + i * verticalOffset;
+        
+        // Save the context state
+        ctx.save();
+        
+        // Translate to the center of where this frame should be
+        const frameCenterX = dx + frameWidth / 2;
+        const frameCenterY = dy + frameHeight / 2;
+        
+        // Move to frame center, rotate, then move back
+        ctx.translate(frameCenterX, frameCenterY);
+        ctx.rotate(currentRotation * Math.PI / 180);
+        ctx.translate(-frameCenterX, -frameCenterY);
+        
+        // Draw the rotated frame
+        ctx.drawImage(frames[i], dx, dy);
+        
+        // Restore the context
+        ctx.restore();
+    }
+}
             
             // Helper function to display errors
             function displayError(message) {
