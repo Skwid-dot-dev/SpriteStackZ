@@ -411,7 +411,7 @@
                 // Draw frames from back to front
                 for (let i = 0; i < numFrames; i++) {
                     const dx = startX + i * horizontalOffset;
-                    const dy = startY + i * verticalOffset;
+                    const dy = startY + i + 1 * verticalOffset;
                     
                     ctx.drawImage(frames[i], dx, dy);
                 }
