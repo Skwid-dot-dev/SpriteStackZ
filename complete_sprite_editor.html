@@ -869,4 +869,753 @@
                     </div>
                     <div class="tool-btn" data-tool="eyedropper" title="Color Picker Tool">
                         <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
-                            <path d="M19.35,11.72L17.22,13.85L15.12,11.76L17.25,9.62C17.25,9.62 17.25,9.62 17.25,9.62C16.41,8.77 15.08,8.77 14.24,9.62L12.11,11.75L
+                            <path d="M19.35,11.72L17.22,13.85L15.12,11.76L17.25,9.62C17.25,9.62 17.25,9.62 17.25,9.62C16.41,8.77 15.08,8.77 14.24,9.62L12.11,11.75L7.04,6.69L10.07,3.66C11.58,2.14 14.03,2.14 15.55,3.66L19.34,7.45C20.84,8.96 20.84,11.42 19.35,11.72M5.63,8.1L10.69,13.17L2.49,21.37C2.1,21.77 1.5,21.77 1.1,21.37C0.71,20.97 0.71,20.37 1.1,19.98L5.63,15.45L2.7,12.53L6.08,9.16L5.63,8.1Z"></path>
+                        </svg>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="color-tools">
+                        <div class="color-preview" id="colorPreview" style="background-color: #000000;"></div>
+                        <input type="color" id="colorPicker" value="#000000">
+                        <div class="color-palette" id="colorPalette">
+                            <!-- Color palette will be generated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="editor-main">
+                    <div class="editor-canvas-container">
+                        <canvas id="editorCanvas" class="editor-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="frames-container" id="framesContainer">
+                    <!-- Frame thumbnails will be generated here -->
+                </div>
+                <div class="frame-tools">
+                    <button id="addFrameBtn" class="editor-btn">
+                        <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+                            <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"></path>
+                        </svg>
+                        Add Frame
+                    </button>
+                    <button id="deleteFrameBtn" class="editor-btn">
+                        <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+                            <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path>
+                        </svg>
+                        Delete Frame
+                    </button>
+                    <button id="duplicateFrameBtn" class="editor-btn">
+                        <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+                            <path d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path>
+                        </svg>
+                        Duplicate Frame
+                    </button>
+                </div>
+                <div class="editor-actions">
+                    <div class="toggle-container">
+                        <span class="toggle-label">Show Grid</span>
+                        <label class="switch">
+                            <input type="checkbox" id="gridToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="editor-btn-group">
+                        <button id="saveEditorBtn" class="editor-btn">
+                            <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+                                <path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"></path>
+                            </svg>
+                            Save Project
+                        </button>
+                        <button id="exportStackBtn" class="editor-btn">
+                            <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+                                <path d="M12,16L19.36,10.27L21,9L12,2L3,9L4.63,10.27M12,18.54L4.62,12.81L3,14.07L12,21.07L21,14.07L19.37,12.8L12,18.54Z"></path>
+                            </svg>
+                            View as Stack
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="canvas-container" id="canvasContainer">
+        <!-- The 3D visualization canvas will be inserted here -->
+    </div>
+    
+    <!-- Ad slot (bottom) -->
+    <div class="ad-container">
+        <!-- AdSense code would go here -->
+    </div>
+    
+    <div class="footer">
+        &copy; 2025 SpriteStackZ | Create beautiful voxel-like 3D sprites from 2D sprite sheets
+    </div>
+
+    <script>
+        // DOM Elements
+        const spriteFileInput = document.getElementById('spriteFile');
+        const previewImage = document.getElementById('previewImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const renderButton = document.getElementById('renderButton');
+        const frameWidth = document.getElementById('frameWidth');
+        const frameHeight = document.getElementById('frameHeight');
+        const horizontalOffset = document.getElementById('horizontalOffset');
+        const verticalOffset = document.getElementById('verticalOffset');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const renderControls = document.getElementById('renderControls');
+        const rotationSlider = document.getElementById('rotationSlider');
+        const rotationValue = document.getElementById('rotationValue');
+        const renderOrderToggle = document.getElementById('renderOrderToggle');
+        const renderOrderText = document.getElementById('renderOrderText');
+        const bgColorPicker = document.getElementById('bgColorPicker');
+        const errorMessage = document.getElementById('errorMessage');
+        const warningMessage = document.getElementById('warningMessage');
+        const infoMessage = document.getElementById('infoMessage');
+        
+        // Editor Elements
+        const editorCanvasWidth = document.getElementById('editorCanvasWidth');
+        const editorCanvasHeight = document.getElementById('editorCanvasHeight');
+        const editorZoomLevel = document.getElementById('editorZoomLevel');
+        const createCanvasButton = document.getElementById('createCanvasButton');
+        const spriteEditorContainer = document.getElementById('spriteEditorContainer');
+        const editorCanvas = document.getElementById('editorCanvas');
+        const colorPicker = document.getElementById('colorPicker');
+        const colorPreview = document.getElementById('colorPreview');
+        const colorPalette = document.getElementById('colorPalette');
+        const framesContainer = document.getElementById('framesContainer');
+        const addFrameBtn = document.getElementById('addFrameBtn');
+        const deleteFrameBtn = document.getElementById('deleteFrameBtn');
+        const duplicateFrameBtn = document.getElementById('duplicateFrameBtn');
+        const gridToggle = document.getElementById('gridToggle');
+        const saveEditorBtn = document.getElementById('saveEditorBtn');
+        const exportStackBtn = document.getElementById('exportStackBtn');
+        
+        // Tab navigation
+        const tabs = document.querySelectorAll('.tab');
+        const sections = document.querySelectorAll('.section');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show active section
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === tabId + 'Section') {
+                        section.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // Global Variables
+        let spriteImage = null;
+        let canvas3D = null;
+        let ctx3D = null;
+        let canvasWidth = 500;
+        let canvasHeight = 500;
+        let rotation = 0;
+        let renderOrder = true; // true = back to front, false = front to back
+        let backgroundColor = '#fafafa';
+        let frames = [];
+        
+        // Editor Variables
+        let editorCtx = null;
+        let pixelSize = 10;
+        let isDrawing = false;
+        let currentTool = 'pencil';
+        let currentColor = '#000000';
+        let editorFrames = [];
+        let currentFrameIndex = 0;
+        let showGrid = true;
+        
+        // Default color palette
+        const defaultPalette = [
+            '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF',
+            '#FFFF00', '#FF00FF', '#00FFFF', '#FF8800', '#8800FF',
+            '#FF0088', '#00FF88', '#0088FF', '#888888', '#444444'
+        ];
+        
+        // Event Listeners
+        spriteFileInput.addEventListener('change', handleFileSelect);
+        renderButton.addEventListener('click', renderSpriteStack);
+        rotationSlider.addEventListener('input', updateRotation);
+        renderOrderToggle.addEventListener('change', toggleRenderOrder);
+        bgColorPicker.addEventListener('input', updateBackgroundColor);
+        createCanvasButton.addEventListener('click', createNewCanvas);
+        
+        // Editor Event Listeners
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTool = btn.getAttribute('data-tool');
+            });
+        });
+        
+        colorPicker.addEventListener('input', (e) => {
+            currentColor = e.target.value;
+            colorPreview.style.backgroundColor = currentColor;
+        });
+        
+        gridToggle.addEventListener('change', () => {
+            showGrid = gridToggle.checked;
+            if (editorCtx) {
+                drawCurrentFrame();
+            }
+        });
+        
+        addFrameBtn.addEventListener('click', addNewFrame);
+        deleteFrameBtn.addEventListener('click', deleteCurrentFrame);
+        duplicateFrameBtn.addEventListener('click', duplicateCurrentFrame);
+        saveEditorBtn.addEventListener('click', saveEditorProject);
+        exportStackBtn.addEventListener('click', exportEditorToStack);
+        
+        // Initialize color palette
+        function initColorPalette() {
+            colorPalette.innerHTML = '';
+            defaultPalette.forEach(color => {
+                const colorEl = document.createElement('div');
+                colorEl.className = 'palette-color';
+                colorEl.style.backgroundColor = color;
+                colorEl.addEventListener('click', () => {
+                    currentColor = color;
+                    colorPicker.value = color;
+                    colorPreview.style.backgroundColor = color;
+                });
+                colorPalette.appendChild(colorEl);
+            });
+        }
+        
+        // Initialize editor canvas
+        function initEditorCanvas() {
+            const width = parseInt(editorCanvasWidth.value);
+            const height = parseInt(editorCanvasHeight.value);
+            pixelSize = parseInt(editorZoomLevel.value);
+            
+            editorCanvas.width = width * pixelSize;
+            editorCanvas.height = height * pixelSize;
+            editorCtx = editorCanvas.getContext('2d');
+            
+            // Set up event listeners for the canvas
+            editorCanvas.addEventListener('mousedown', startDrawing);
+            editorCanvas.addEventListener('mousemove', draw);
+            editorCanvas.addEventListener('mouseup', stopDrawing);
+            editorCanvas.addEventListener('mouseleave', stopDrawing);
+            
+            // Create first frame
+            editorFrames = [];
+            addNewFrame();
+            
+            // Draw the initial state
+            drawCurrentFrame();
+        }
+        
+        // Create a new canvas for editing
+        function createNewCanvas() {
+            // Validate input
+            const width = parseInt(editorCanvasWidth.value);
+            const height = parseInt(editorCanvasHeight.value);
+            const zoom = parseInt(editorZoomLevel.value);
+            
+            if (isNaN(width) || isNaN(height) || isNaN(zoom) || 
+                width < 8 || height < 8 || zoom < 1 || 
+                width > 128 || height > 128 || zoom > 32) {
+                showError('Please enter valid dimensions (8-128) and zoom level (1-32).');
+                return;
+            }
+            
+            spriteEditorContainer.style.display = 'flex';
+            initEditorCanvas();
+            initColorPalette();
+            
+            showInfo('Canvas created! Start drawing your sprite.');
+        }
+        
+        // Editor Drawing Functions
+        function startDrawing(e) {
+            isDrawing = true;
+            
+            // Get the pixel coordinates
+            const rect = editorCanvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / pixelSize);
+            const y = Math.floor((e.clientY - rect.top) / pixelSize);
+            
+            // Apply the current tool
+            applyTool(x, y);
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            // Get the pixel coordinates
+            const rect = editorCanvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / pixelSize);
+            const y = Math.floor((e.clientY - rect.top) / pixelSize);
+            
+            // Apply the current tool
+            applyTool(x, y);
+        }
+        
+        function stopDrawing() {
+            isDrawing = false;
+        }
+        
+        function applyTool(x, y) {
+            const width = parseInt(editorCanvasWidth.value);
+            const height = parseInt(editorCanvasHeight.value);
+            
+            // Make sure the coordinates are within bounds
+            if (x < 0 || x >= width || y < 0 || y >= height) return;
+            
+            // Get the current frame data
+            const frameData = editorFrames[currentFrameIndex];
+            
+            if (currentTool === 'pencil') {
+                // Set the pixel to the current color
+                frameData.pixels[y * width + x] = currentColor;
+            } else if (currentTool === 'eraser') {
+                // Set the pixel to transparent
+                frameData.pixels[y * width + x] = null;
+            } else if (currentTool === 'fill') {
+                // Flood fill algorithm
+                const targetColor = frameData.pixels[y * width + x];
+                
+                // Don't fill if the target is already the current color
+                if (targetColor === currentColor) return;
+                
+                // Create a queue for the flood fill
+                const queue = [];
+                queue.push({x, y});
+                
+                while (queue.length > 0) {
+                    const {x: floodX, y: floodY} = queue.shift();
+                    const index = floodY * width + floodX;
+                    
+                    // Skip if out of bounds or already the target color
+                    if (floodX < 0 || floodX >= width || floodY < 0 || floodY >= height || 
+                        frameData.pixels[index] !== targetColor) {
+                        continue;
+                    }
+                    
+                    // Set the pixel to the current color
+                    frameData.pixels[index] = currentColor;
+                    
+                    // Add neighbors to the queue
+                    queue.push({x: floodX + 1, y: floodY});
+                    queue.push({x: floodX - 1, y: floodY});
+                    queue.push({x: floodX, y: floodY + 1});
+                    queue.push({x: floodX, y: floodY - 1});
+                }
+            } else if (currentTool === 'eyedropper') {
+                // Get the color at the pixel
+                const pixelColor = frameData.pixels[y * width + x];
+                if (pixelColor) {
+                    currentColor = pixelColor;
+                    colorPicker.value = pixelColor;
+                    colorPreview.style.backgroundColor = pixelColor;
+                }
+            }
+            
+            // Redraw the canvas
+            drawCurrentFrame();
+            
+            // Update the frame thumbnail
+            updateFrameThumbnail(currentFrameIndex);
+        }
+        
+        function drawCurrentFrame() {
+            const width = parseInt(editorCanvasWidth.value);
+            const height = parseInt(editorCanvasHeight.value);
+            
+            // Clear the canvas
+            editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+            
+            // Draw a white background
+            editorCtx.fillStyle = '#FFFFFF';
+            editorCtx.fillRect(0, 0, editorCanvas.width, editorCanvas.height);
+            
+            // Get the current frame data
+            const frameData = editorFrames[currentFrameIndex];
+            
+            // Draw each pixel
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const pixelColor = frameData.pixels[y * width + x];
+                    if (pixelColor) {
+                        editorCtx.fillStyle = pixelColor;
+                        editorCtx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+                    }
+                }
+            }
+            
+            // Draw grid if enabled
+            if (showGrid) {
+                editorCtx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                editorCtx.lineWidth = 1;
+                
+                for (let x = 0; x <= width; x++) {
+                    editorCtx.beginPath();
+                    editorCtx.moveTo(x * pixelSize, 0);
+                    editorCtx.lineTo(x * pixelSize, height * pixelSize);
+                    editorCtx.stroke();
+                }
+                
+                for (let y = 0; y <= height; y++) {
+                    editorCtx.beginPath();
+                    editorCtx.moveTo(0, y * pixelSize);
+                    editorCtx.lineTo(width * pixelSize, y * pixelSize);
+                    editorCtx.stroke();
+                }
+            }
+        }
+        
+        // Frame management functions
+        function addNewFrame() {
+            const width = parseInt(editorCanvasWidth.value);
+            const height = parseInt(editorCanvasHeight.value);
+            
+            // Create a new frame with empty pixels
+            const newFrame = {
+                pixels: new Array(width * height).fill(null),
+                thumbnail: null
+            };
+            
+            // Add the new frame to the array
+            editorFrames.push(newFrame);
+            currentFrameIndex = editorFrames.length - 1;
+            
+            // Create a thumbnail for the frame
+            createFrameThumbnail(currentFrameIndex);
+            
+            // Redraw the current frame
+            drawCurrentFrame();
+            
+            // Update frame selection
+            updateFrameSelection();
+        }
+        
+        function deleteCurrentFrame() {
+            // Don't delete the last frame
+            if (editorFrames.length <= 1) {
+                showWarning('Cannot delete the last frame.');
+                return;
+            }
+            
+            // Remove the current frame
+            editorFrames.splice(currentFrameIndex, 1);
+            
+            // Update the current frame index
+            if (currentFrameIndex >= editorFrames.length) {
+                currentFrameIndex = editorFrames.length - 1;
+            }
+            
+            // Redraw the frames container
+            updateFramesContainer();
+            
+            // Redraw the current frame
+            drawCurrentFrame();
+            
+            // Update frame selection
+            updateFrameSelection();
+        }
+        
+        function duplicateCurrentFrame() {
+            const currentFrame = editorFrames[currentFrameIndex];
+            
+            // Create a new frame with the same pixels
+            const newFrame = {
+                pixels: [...currentFrame.pixels],
+                thumbnail: null
+            };
+            
+            // Add the new frame right after the current one
+            editorFrames.splice(currentFrameIndex + 1, 0, newFrame);
+            currentFrameIndex++;
+            
+            // Create a thumbnail for the new frame
+            createFrameThumbnail(currentFrameIndex);
+            
+            // Update frame selection
+            updateFrameSelection();
+        }
+        
+        function createFrameThumbnail(frameIndex) {
+            const width = parseInt(editorCanvasWidth.value);
+            const height = parseInt(editorCanvasHeight.value);
+            
+            // Create a canvas for the thumbnail
+            const thumbnailCanvas = document.createElement('canvas');
+            thumbnailCanvas.width = width;
+            thumbnailCanvas.height = height;
+            const thumbnailCtx = thumbnailCanvas.getContext('2d');
+            
+            // Draw the frame on the thumbnail canvas
+            thumbnailCtx.fillStyle = '#FFFFFF';
+            thumbnailCtx.fillRect(0, 0, width, height);
+            
+            const frameData = editorFrames[frameIndex];
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const pixelColor = frameData.pixels[y * width + x];
+                    if (pixelColor) {
+                        thumbnailCtx.fillStyle = pixelColor;
+                        thumbnailCtx.fillRect(x, y, 1, 1);
+                    }
+                }
+            }
+            
+            // Save the thumbnail as a data URL
+            frameData.thumbnail = thumbnailCanvas.toDataURL();
+            
+            // Update the frames container
+            updateFramesContainer();
+        }
+        
+        function updateFrameThumbnail(frameIndex) {
+            // Just recreate the thumbnail
+            createFrameThumbnail(frameIndex);
+        }
+        
+        function updateFramesContainer() {
+            framesContainer.innerHTML = '';
+            
+            // Create a div for each frame
+            editorFrames.forEach((frame, index) => {
+                const frameDiv = document.createElement('div');
+                frameDiv.className = 'frame-item';
+                if (index === currentFrameIndex) {
+                    frameDiv.classList.add('active');
+                }
+                
+                // Add the thumbnail image
+                const thumbnailImg = document.createElement('img');
+                thumbnailImg.src = frame.thumbnail;
+                thumbnailImg.alt = `Frame ${index + 1}`;
+                frameDiv.appendChild(thumbnailImg);
+                
+                // Add frame number
+                const frameNumber = document.createElement('span');
+                frameNumber.style.position = 'absolute';
+                frameNumber.style.bottom = '2px';
+                frameNumber.style.right = '2px';
+                frameNumber.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                frameNumber.style.color = 'white';
+                frameNumber.style.padding = '1px 4px';
+                frameNumber.style.borderRadius = '4px';
+                frameNumber.style.fontSize = '10px';
+                frameNumber.textContent = (index + 1).toString();
+                frameDiv.appendChild(frameNumber);
+                
+                // Add click event to select the frame
+                frameDiv.addEventListener('click', () => {
+                    currentFrameIndex = index;
+                    drawCurrentFrame();
+                    updateFrameSelection();
+                });
+                
+                framesContainer.appendChild(frameDiv);
+            });
+        }
+        
+        function updateFrameSelection() {
+            // Update the active class on frame items
+            const frameItems = framesContainer.querySelectorAll('.frame-item');
+            frameItems.forEach((item, index) => {
+                if (index === currentFrameIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
+        // Save and export functions
+        function saveEditorProject() {
+            const projectData = {
+                width: parseInt(editorCanvasWidth.value),
+                height: parseInt(editorCanvasHeight.value),
+                frames: editorFrames.map(frame => ({
+                    pixels: frame.pixels
+                }))
+            };
+            
+            // Create a blob with the project data
+            const blob = new Blob([JSON.stringify(projectData)], {type: 'application/json'});
+            
+            // Create a download link
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sprite_project.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showInfo('Project saved successfully!');
+        }
+        
+        function exportEditorToStack() {
+            // Create a composite image from all frames
+            const width = parseInt(editorCanvasWidth.value);
+            const height = parseInt(editorCanvasHeight.value);
+            const frameCount = editorFrames.length;
+            
+            // Create a canvas for the composite image
+            const compositeCanvas = document.createElement('canvas');
+            compositeCanvas.width = width * frameCount;
+            compositeCanvas.height = height;
+            const compositeCtx = compositeCanvas.getContext('2d');
+            
+            // Draw each frame on the composite canvas
+            editorFrames.forEach((frame, index) => {
+                // Create a canvas for the frame
+                const frameCanvas = document.createElement('canvas');
+                frameCanvas.width = width;
+                frameCanvas.height = height;
+                const frameCtx = frameCanvas.getContext('2d');
+                
+                // Draw the frame
+                frameCtx.fillStyle = '#FFFFFF';
+                frameCtx.fillRect(0, 0, width, height);
+                
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const pixelColor = frame.pixels[y * width + x];
+                        if (pixelColor) {
+                            frameCtx.fillStyle = pixelColor;
+                            frameCtx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                }
+                
+                // Draw the frame on the composite canvas
+                compositeCtx.drawImage(frameCanvas, index * width, 0);
+            });
+            
+            // Create an image from the composite canvas
+            const compositeImage = new Image();
+            compositeImage.src = compositeCanvas.toDataURL();
+            
+            // Switch to the viewer tab
+            tabs.forEach(tab => {
+                if (tab.getAttribute('data-tab') === 'viewer') {
+                    tab.click();
+                }
+            });
+            
+            // Set up the viewer with the composite image
+            spriteImage = compositeImage;
+            previewImage.src = compositeImage.src;
+            imagePreview.style.display = 'block';
+            
+            // Set the frame dimensions
+            frameWidth.value = width;
+            frameHeight.value = height;
+            
+            // Enable the render button
+            renderButton.disabled = false;
+            
+            showInfo('Sprite exported to viewer. Click "Render Stack" to visualize.');
+        }
+        
+        // Sprite Viewer Functions
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    spriteImage = img;
+                    previewImage.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    renderButton.disabled = false;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function renderSpriteStack() {
+            if (!spriteImage) {
+                showError('Please upload a sprite strip first.');
+                return;
+            }
+            
+            // Get parameters
+            const fWidth = parseInt(frameWidth.value);
+            const fHeight = parseInt(frameHeight.value);
+            const hOffset = parseInt(horizontalOffset.value);
+            const vOffset = parseInt(verticalOffset.value);
+            
+            // Validate parameters
+            if (isNaN(fWidth) || isNaN(fHeight) || fWidth <= 0 || fHeight <= 0 || fWidth > 256 || fHeight > 256) {
+                showError('Invalid frame dimensions. Width and height must be between 1 and 256 pixels.');
+                return;
+            }
+            
+            // Calculate number of frames
+            const framesCount = Math.floor(spriteImage.width / fWidth);
+            
+            if (framesCount <= 0) {
+                showError('The sprite width is smaller than the frame width. Please check your parameters.');
+                return;
+            }
+            
+            // Show info about the sprite
+            showInfo(`Detected ${framesCount} frames with dimensions ${fWidth}x${fHeight} pixels.`);
+            
+            // Set up 3D canvas
+            setupCanvas();
+            
+            // Create frames array
+            frames = [];
+            for (let i = 0; i < framesCount; i++) {
+                const frameCanvas = document.createElement('canvas');
+                frameCanvas.width = fWidth;
+                frameCanvas.height = fHeight;
+                const frameCtx = frameCanvas.getContext('2d');
+                
+                // Draw the frame from the sprite sheet
+                frameCtx.drawImage(
+                    spriteImage,
+                    i * fWidth + hOffset,
+                    vOffset,
+                    fWidth,
+                    fHeight,
+                    0,
+                    0,
+                    fWidth,
+                    fHeight
+                );
+                
+                frames.push(frameCanvas);
+            }
+            
+            // Show render controls
+            renderControls.style.display = 'block';
+            
+            // Render the stack
+            renderStack();
+        }
+        
+        function setupCanvas() {
+            // Remove any existing canvas
+            canvasContainer.innerHTML = '';
+            
+            // Create a new canvas
+            canvas3D = document.createElement('canvas');
+            canvas3D.width = canvasWidth;
+            canvas3D.height = canvasHeight;
+            canvasContainer.appendChild(canvas3D);
+            
+            ctx3D = canvas3D.getContext('2d');
+        }
+        
+        function renderStack() {
+            if (!frames.length) return
