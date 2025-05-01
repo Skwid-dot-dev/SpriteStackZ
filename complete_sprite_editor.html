@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpriteStackZ</title>
+
+    <!-- Google AdSense script (unchanged) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9312087525503875"
+     crossorigin="anonymous"></script>
+
+    <!-- Modern minimalist styling -->
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --background: #fafafa;
+            --card: #ffffff;
+            --border: #e5e7eb;
+            --text: #1f2937;
+            --text-secondary: #6b7280;
+            --shadow: rgba(0, 0, 0, 0.05);
+            --accent: #8b5cf6;
+            --radius: 12px;
+            --transition: all 0.2s ease;
+            --grid-color: #d1d5db;
+            --editor-bg: #f3f4f6;
+            --tool-active: #dbeafe;
+            --tool-hover: #eff6ff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #121212;
+                --card: #1e1e1e;
+                --border: #383838;
+                --text: #e5e7eb;
+                --text-secondary: #9ca3af;
+                --shadow: rgba(0, 0, 0, 0.2);
+                --grid-color: #4b5563;
+                --editor-bg: #262626;
+                --tool-active: #1e3a8a;
+                --tool-hover: #1e40af;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--card);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        h1 {
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 2.2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        label small {
+            opacity: 0.7;
+            font-weight: normal;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            background-color: transparent;
+            transition: var(--transition);
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        input[type="file"]:hover {
+            border-color: var(--primary);
+        }
+
+        .parameters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: transparent;
+            color: var(--text);
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background-color: var(--border);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .preview {
+            margin: 1.5rem 0;
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: none;
+            background-color: rgba(0, 0, 0, 0.03);
+            padding: 1rem;
+        }
+
+        .preview p {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .preview img {
+            max-width: 100%;
+            border-radius: calc(var(--radius) - 4px);
+            image-rendering: pixelated;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .canvas-container {
+            width: 100%;
+            overflow: auto;
+            border-radius: var(--radius);
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            background-color: transparent;
+            transition: var(--transition);
+            padding: 1rem;
+        }
+
+        canvas {
+            margin: 10px;
+            image-rendering: pixelated;
+            border-radius: calc(var(--radius) - 4px);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-left: 3px solid #ef4444;
+        }
+
+        .warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border-left: 3px solid #f59e0b;
+        }
+
+        .info {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .controls {
+            margin-top: 1.5rem;
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        
+        .slider-container {
+            margin-top: 1.5rem;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 5px;
+            border-radius: 5px;
+            appearance: none;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Toggle switches */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .toggle-label {
+            margin-right: 1rem;
+            flex-grow: 1;
+            font-size: 0.9rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: .4s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Color picker styles */
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .color-label {
+            margin-right: 1rem;
+            flex-grow: 1;
+            font-size: 0.9rem;
+        }
+
+        input[type="color"] {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            background: transparent;
+            outline: none;
+            overflow: hidden;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        /* Animation for the render button */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .parameters {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Messages wrapper */
+        .messages {
+            margin: 1rem 0;
+        }
+
+        /* Hide messages initially */
+        #errorMessage, #warningMessage, #infoMessage {
+            display: none;
+        }
+        /* When messages have content, display them */
+        #errorMessage:not(:empty), #warningMessage:not(:empty), #infoMessage:not(:empty) {
+            display: block;
+        }
+
+        /* Icon styles */
+        .icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            stroke-width: 0;
+            stroke: currentColor;
+            fill: currentColor;
+            vertical-align: middle;
+        }
+
+        /* Ad container styles for compliance */
+        .ad-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 1rem 0;
+            text-align: center;
+            overflow: hidden;
+            border-radius: var(--radius);
+        }
+
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        .tabs::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        
+        .tab {
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            margin-right: 0.5rem;
+        }
+        
+        .tab:hover {
+            color: var(--primary);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Content sections */
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        /* Sprite Editor Styles */
+        .editor-container {
+            width: 100%;
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+        
+        @media (min-width: 768px) {
+            .editor-container {
+                flex-direction: row;
+            }
+        }
+        
+        .editor-toolbar {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            background-color: var(--card);
+            border-right: 1px solid var(--border);
+            min-width: 80px;
+        }
+        
+        .editor-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--editor-bg);
+            position: relative;
+            min-height: 500px;
+        }
+        
+        .editor-canvas-container {
+            flex: 1;
+            overflow: auto;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .editor-canvas {
+            box-shadow: 0 4px 20px var(--shadow);
+            image-rendering: pixelated;
+            background-color: white;
+        }
+        
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        .tool-btn:hover {
+            background-color: var(--tool-hover);
+        }
+        
+        .tool-btn.active {
+            background-color: var(--tool-active);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: var(--border);
+            margin: 1rem 0;
+            width: 100%;
+        }
+        
+        .color-tools {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        /* Frame editor */
+        .frames-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 1rem;
+            background-color: var(--card);
+            border-top: 1px solid var(--border);
+            scrollbar-width: thin;
+        }
+        
+        .frame-item {
+            width: 70px;
+            height: 70px;
+            margin-right: 0.5rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            background-color: white;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .frame-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .frame-item.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+        }
+        
+        .frame-item img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            image-rendering: pixelated;
+        }
+        
+        .frame-tools {
+            display: flex;
+            align-items: center;
+            padding: 0 1rem 1rem;
+            background-color: var(--card);
+        }
+        
+        .frame-tools button {
+            width: auto;
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+        }
+        
+        /* Editor specific buttons */
+        .editor-btn {
+            width: auto;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .editor-btn-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .editor-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: var(--card);
+            border-top: 1px solid var(--border);
+        }
+        
+        .editor-grid-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .editor-grid-toggle label {
+            margin-bottom: 0;
+            margin-left: 0.5rem;
+        }
+        
+        /* MOBILE OPTIMIZATIONS */
+        @media (max-width: 767px) {
+            .editor-container {
+                flex-direction: column;
+            }
+            
+            .editor-toolbar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            
+            .tool-btn {
+                margin-right: 0.5rem;
+            }
+            
+            .divider {
+                display: none;
+            }
+            
+            .color-tools {
+                flex-direction: row;
+                margin-left: 1rem;
+            }
+            
+            .color-preview {
+                margin-right: 0.5rem;
+            }
+        }
+        
+        /* Color palette */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .palette-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        
+        .palette-color:hover {
+            transform: scale(1.2);
+        }
+        
+        .palette-color.active {
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Ad slot (top) -->
+    <div class="ad-container">
+        <!-- AdSense code would go here -->
+    </div>
+
+    <div class="container">
+        <h1><span class="logo-text">SpriteStackZ</span></h1>
+        
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <div class="tab active" data-tab="viewer">Sprite Stack Viewer</div>
+            <div class="tab" data-tab="editor">Sprite Editor</div>
+        </div>
+        
+        <!-- Sprite Viewer Section -->
+        <div class="section active" id="viewerSection">
+            <div class="description">
+                Create and visualize voxel-like 3D sprites from 2D sprite strips. Perfect for pixel artists, game developers, and digital creators looking to transform flat sprites into depth-rich stacked visualizations.
+            </div>
+            
+            <div class="input-group">
+                <label for="spriteFile">Upload Sprite Strip</label>
+                <input type="file" id="spriteFile" accept=".png, .jpg, .jpeg, .gif">
+            </div>
+            
+            <div class="preview" id="imagePreview">
+                <p>Preview</p>
+                <img id="previewImage" alt="Sprite Preview">
+            </div>
+            
+            <div class="parameters">
+                <div class="input-group">
+                    <label for="frameWidth">Frame Width (px) <small>max 256</small></label>
+                    <input type="number" id="frameWidth" min="1" max="256" value="32">
+                </div>
+                
+                <div class="input-group">
+                    <label for="frameHeight">Frame Height (px) <small>max 256</small></label>
+                    <input type="number" id="frameHeight" min="1" max="256" value="32">
+                </div>
+                
+                <div class="input-group">
+                    <label for="horizontalOffset">Horizontal Offset (px)</label>
+                    <input type="number" id="horizontalOffset" value="0">
+                </div>
+                
+                <div class="input-group">
+                    <label for="verticalOffset">Vertical Offset (px)</label>
+                    <input type="number" id="verticalOffset" value="0">
+                </div>
+            </div>
+            
+            <button id="renderButton" disabled>
+                <svg class="icon" viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M12,16L19.36,10.27L21,9L12,2L3,9L4.63,10.27M12,18.54L4.62,12.81L3,14.07L12,21.07L21,14.07L19.37,12.8L12,18.54Z"></path>
+                </svg>
+                Render Stack
+            </button>
+            
+            <div class="controls" id="renderControls" style="display: none;">
+                <!-- Rendering order toggle -->
+                <div class="toggle-container">
+                    <span class="toggle-label">Rendering Order:</span>
+                    <span id="renderOrderText">Back to Front</span>
+                    <label class="switch">
+                        <input type="checkbox" id="renderOrderToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Background color picker -->
+                <div class="color-picker-container">
+                    <span class="color-label">Background Color:</span>
+                    <input type="color" id="bgColorPicker" value="#fafafa">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Rotation: </span>
+                        <span id="rotationValue">0°</span>
+                    </div>
+                    <input type="range" id="rotationSlider" min="0" max="359" value="0">
+                </div>
+            </div>
+            
+            <div class="messages">
+                <div id="errorMessage" class="message error"></div>
+                <div id="warningMessage" class="message warning"></div>
+                <div id="infoMessage" class="message info"></div>
+            </div>
+        </div>
+        
+        <!-- Sprite Editor Section -->
+        <div class="section" id="editorSection">
+            <div class="description">
+                Create and edit pixel art sprites for your 3D stack visualizations. Design frames layer by layer with our intuitive sprite editor.
+            </div>
+            
+            <div class="parameters">
+                <div class="input-group">
+                    <label for="editorCanvasWidth">Canvas Width (px) <small>max 128</small></label>
+                    <input type="number" id="editorCanvasWidth" min="8" max="128" value="32">
+                </div>
+                
+                <div class="input-group">
+                    <label for="editorCanvasHeight">Canvas Height (px) <small>max 128</small></label>
+                    <input type="number" id="editorCanvasHeight" min="8" max="128" value="32">
+                </div>
+                
+                <div class="input-group">
+                    <label for="editorZoomLevel">Zoom Level</label>
+                    <input type="number" id="editorZoomLevel" min="1" max="32" value="10">
+                </div>
+                
+                <div class="input-group">
+                    <button id="createCanvasButton" class="editor-btn">
+                        <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+                            <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"></path>
+                        </svg>
+                        Create New Canvas
+                    </button>
+                </div>
+            </div>
+            
+            <div class="editor-container" id="spriteEditorContainer" style="display: none;">
+                <div class="editor-toolbar">
+                    <div class="tool-btn active" data-tool="pencil" title="Pencil Tool">
+                        <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path>
+                        </svg>
+                    </div>
+                    <div class="tool-btn" data-tool="eraser" title="Eraser Tool">
+                        <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M16.24,3.56L21.19,8.5C21.97,9.29 21.97,10.55 21.19,11.34L12,20.53C10.44,22.09 7.91,22.09 6.34,20.53L2.81,17C2.03,16.21 2.03,14.95 2.81,14.16L13.41,3.56C14.2,2.78 15.46,2.78 16.24,3.56M4.22,15.58L7.76,19.11C8.54,19.9 9.8,19.9 10.59,19.11L14.12,15.58L9.17,10.63L4.22,15.58Z"></path>
+                        </svg>
+                    </div>
+                    <div class="tool-btn" data-tool="fill" title="Fill Tool">
+                        <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M19,11.5C19,11.5 17,13.67 17,15A2,2 0 0,0 19,17A2,2 0 0,0 21,15C21,13.67 19,11.5 19,11.5M5.21,10L10,5.21L14.79,10M16.56,8.94L7.62,0L6.21,1.41L8.59,3.79L3.44,8.94C2.85,9.5 2.85,10.47 3.44,11.06L8.94,16.56C9.23,16.85 9.62,17 10,17C10.38,17 10.77,16.85 11.06,16.56L16.56,11.06C17.15,10.47 17.15,9.5 16.56,8.94Z"></path>
+                        </svg>
+                    </div>
+                    <div class="tool-btn" data-tool="eyedropper" title="Color Picker Tool">
+                        <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M19.35,11.72L17.22,13.85L15.12,11.76L17.25,9.62C17.25,9.62 17.25,9.62 17.25,9.62C16.41,8.77 15.08,8.77 14.24,9.62L12.11,11.75L
