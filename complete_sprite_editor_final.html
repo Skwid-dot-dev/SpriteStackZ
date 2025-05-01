@@ -1679,4 +1679,54 @@ function toggleRenderOrder() {
         }
         
         function renderStack() {
-            if (!frames.length) return
+    if (!frames.length) return;
+
+    // Clear the canvas
+    ctx3D.fillStyle = backgroundColor;
+    ctx3D.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    const fWidth = frames[0].width;
+    const fHeight = frames[0].height;
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+
+    const angle = (rotation * Math.PI) / 180;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    const xOffset = 2;
+    const yOffset = 2;
+
+    const renderFrames = renderOrder ? frames : [...frames].reverse();
+
+    renderFrames.forEach((frame, i) => {
+        const dx = i * xOffset;
+        const dy = i * yOffset;
+
+        const rx = dx * cos - dy * sin;
+        const ry = dx * sin + dy * cos;
+
+        const drawX = centerX - fWidth / 2 + rx;
+        const drawY = centerY - fHeight / 2 + ry;
+
+        ctx3D.drawImage(frame, drawX, drawY);
+    });
+}
+
+function updateRotation() {
+    rotation = parseInt(rotationSlider.value);
+    rotationValue.textContent = `${rotation}°`;
+    renderStack();
+}
+
+function updateBackgroundColor() {
+    backgroundColor = bgColorPicker.value;
+    renderStack();
+}
+
+function toggleRenderOrder() {
+    renderOrder = renderOrderToggle.checked;
+    renderOrderText.textContent = renderOrder ? 'Back to Front' : 'Front to Back';
+    renderStack();
+}
+    </script>
